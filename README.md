@@ -1,4 +1,29 @@
-# Jekyll in a Docker Container
+# Jekyll in a Docker Container for AWS Amplify
+
+## :bookmark: Important Note on this Fork :bookmark:
+I started this fork when I had a problem with the older Ruby version that AWS CodeBuild (via AWS Amplify) was using.
+(The AWS-supplied CodeBuild container has both version 2.4 and 2.6, but was defaulting to 2.4. I needed at least 2.6 for one of the Gems I was using.)
+This Docker container merges Bret's `Dockerfile` with the one being used by AWS Amplify with everything but the Ruby prerequisites removed.
+I uploaded the resulting container to AWS ECR and told Amplify to use it, and got pretty far.
+Then I found another Gem I was using required a JavaScript runtime, at which point I threw up my hands in frustration.
+Come to find out, it is rather straight forward to tell Amplify to use the 2.6 version of Ruby:
+
+```yaml
+preBuild:
+  commands:
+    - rvm use $VERSION_RUBY_2_6
+    - bundle install --path vendor/bundle
+build:
+  commands:
+    - rvm use $VERSION_RUBY_2_6
+    - bundle exec jekyll build --trace
+```
+
+Just include the `rvm use $VERSION_RUBY_2_6` command in the "preBuild" and "build" sections of "amplify.yaml".
+
+This effort is abandoned and here just for historic purposes.
+
+---
 
 [![GitHub Super-Linter](https://github.com/bretfisher/jekyll-serve/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 ![Build and Push Image](https://github.com/bretfisher/jekyll-serve/actions/workflows/docker-build-and-push.yml/badge.svg?branch=main)
